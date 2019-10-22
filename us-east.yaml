@@ -13,7 +13,6 @@ applications:
     - lxd:1
     - lxd:2
     options:
-      expected-osd-count: 9
       pgs-per-osd: 200
       source: cloud:bionic-train
     annotations:
@@ -55,7 +54,7 @@ applications:
       nrpe-external-master: public-space
       public: ceph-access-space
       secrets-storage: public-space
-  ceph-radosgw:
+  rgw-us-east:
     charm: cs:~openstack-charmers-next/ceph-radosgw-347
     num_units: 3
     to:
@@ -86,7 +85,7 @@ applications:
       nrpe-external-master: public-space
       public: public-space
       slave: public-space
-  ceph-rbd-mirror:
+  rbd-mirror-us-east:
     charm: cs:~openstack-charmers-next/ceph-rbd-mirror-20
     num_units: 3
     to:
@@ -206,9 +205,9 @@ relations:
   - vault:etcd
 - - ceph-osd:juju-info
   - bcache-tuning:juju-info
-- - ceph-radosgw:ha
+- - rgw-us-east:ha
   - hacluster-ceph-radosgw:ha
-- - ceph-radosgw:mon
+- - rgw-us-east:mon
   - ceph-mon:radosgw
-- - ceph-rbd-mirror:ceph-local
+- - rbd-mirror-us-east:ceph-local
   - ceph-mon:rbd-mirror

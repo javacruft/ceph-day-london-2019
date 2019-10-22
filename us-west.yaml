@@ -13,7 +13,6 @@ applications:
     - lxd:1
     - lxd:2
     options:
-      expected-osd-count: 9
       pgs-per-osd: 200
       source: cloud:bionic-train
     annotations:
@@ -55,7 +54,7 @@ applications:
       nrpe-external-master: public-space
       public: ceph-access-space
       secrets-storage: public-space
-  ceph-radosgw:
+  rgw-us-west:
     charm: cs:~openstack-charmers-next/ceph-radosgw-347
     num_units: 3
     to:
@@ -64,7 +63,7 @@ applications:
     - lxd:2
     options:
       source: cloud:bionic-train
-      vip: 10.246.119.255
+      vip: 10.246.119.250
       realm: replicated
       zonegroup: us
       zone: us-west
@@ -86,7 +85,7 @@ applications:
       nrpe-external-master: public-space
       public: public-space
       slave: public-space
-  ceph-rbd-mirror:
+  rbd-mirror-us-west:
     charm: cs:~openstack-charmers-next/ceph-rbd-mirror-20
     num_units: 3
     to:
@@ -169,7 +168,7 @@ applications:
     options:
       channel: 1.2/stable
       totally-unsecure-auto-unlock: true
-      vip: 10.246.119.260
+      vip: 10.246.119.251
     annotations:
       gui-x: "614"
       gui-y: "618.5898384862246"
@@ -206,9 +205,9 @@ relations:
   - vault:etcd
 - - ceph-osd:juju-info
   - bcache-tuning:juju-info
-- - ceph-radosgw:ha
+- - rgw-us-west:ha
   - hacluster-ceph-radosgw:ha
-- - ceph-radosgw:mon
+- - rgw-us-west:mon
   - ceph-mon:radosgw
-- - ceph-rbd-mirror:ceph-local
+- - rbd-mirror-us-west:ceph-local
   - ceph-mon:rbd-mirror
