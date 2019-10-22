@@ -1,0 +1,214 @@
+series: bionic
+applications:
+  bcache-tuning:
+    charm: cs:~james-page/bcache-tuning-10
+    annotations:
+      gui-x: "659"
+      gui-y: "943"
+  ceph-mon:
+    charm: cs:~openstack-charmers-next/ceph-mon-397
+    num_units: 3
+    to:
+    - lxd:0
+    - lxd:1
+    - lxd:2
+    options:
+      expected-osd-count: 9
+      pgs-per-osd: 200
+      source: cloud:bionic-train
+    annotations:
+      gui-x: "999"
+      gui-y: "590.4101615137754"
+    constraints: cpu-cores=4 mem=8192
+    bindings:
+      "": public-space
+      admin: public-space
+      bootstrap-source: public-space
+      client: public-space
+      cluster: ceph-replica-space
+      mds: public-space
+      mon: public-space
+      nrpe-external-master: public-space
+      osd: public-space
+      public: ceph-access-space
+      radosgw: public-space
+      rbd-mirror: public-space
+  ceph-osd:
+    charm: cs:~openstack-charmers-next/ceph-osd-423
+    num_units: 3
+    to:
+    - "0"
+    - "1"
+    - "2"
+    options:
+      osd-devices: /dev/disk/by-dname/bcache1 /dev/disk/by-dname/bcache2 /dev/disk/by-dname/bcache3
+      osd-encrypt: true
+      osd-encrypt-keymanager: vault
+      source: cloud:bionic-train
+    annotations:
+      gui-x: "804"
+      gui-y: "878.4102225489316"
+    bindings:
+      "": public-space
+      cluster: ceph-replica-space
+      mon: public-space
+      nrpe-external-master: public-space
+      public: ceph-access-space
+      secrets-storage: public-space
+  ceph-radosgw:
+    charm: cs:~openstack-charmers-next/ceph-radosgw-347
+    num_units: 3
+    to:
+    - lxd:0
+    - lxd:1
+    - lxd:2
+    options:
+      source: cloud:bionic-train
+      vip: 10.246.119.253
+      realm: replicated
+      zonegroup: us
+      zone: us-east
+    annotations:
+      gui-x: "1254"
+      gui-y: "717"
+    constraints: cpu-cores=8 mem=8192
+    bindings:
+      "": public-space
+      admin: public-space
+      certificates: public-space
+      cluster: public-space
+      gateway: public-space
+      ha: public-space
+      identity-service: public-space
+      internal: public-space
+      master: public-space
+      mon: ceph-access-space
+      nrpe-external-master: public-space
+      public: public-space
+      slave: public-space
+  ceph-rbd-mirror:
+    charm: cs:~openstack-charmers-next/ceph-rbd-mirror-20
+    num_units: 3
+    to:
+    - lxd:0
+    - lxd:1
+    - lxd:2
+    options:
+      source: cloud:bionic-train
+    constraints: cpu-cores=8 mem=8192
+    bindings:
+      "": public-space
+      ceph-local: public-space
+      ceph-remote: public-space
+      certificates: public-space
+      cluster: ceph-replica-space
+      nrpe-external-master: public-space
+      public: ceph-access-space
+  easyrsa:
+    charm: cs:~containers/easyrsa-278
+    num_units: 1
+    to:
+    - lxd:0
+    annotations:
+      gui-x: "306.99993896484375"
+      gui-y: "522"
+    constraints: cpu-cores=1 mem=2048
+    bindings:
+      "": public-space
+      client: public-space
+  etcd:
+    charm: cs:etcd-460
+    num_units: 1
+    to:
+    - lxd:1
+    options:
+      channel: 3.1/stable
+    annotations:
+      gui-x: "548.9999389648438"
+      gui-y: "361.58983848622455"
+    constraints: cpu-cores=2 mem=4096
+    bindings:
+      "": public-space
+      certificates: public-space
+      cluster: public-space
+      db: public-space
+      nrpe-external-master: public-space
+      proxy: public-space
+  hacluster-ceph-radosgw:
+    charm: cs:~openstack-charmers-next/hacluster-114
+    options:
+      cluster_count: 3
+    annotations:
+      gui-x: "1398"
+      gui-y: "488.41022254893164"
+  mysql:
+    charm: cs:percona-cluster-279
+    num_units: 1
+    to:
+    - lxd:2
+    annotations:
+      gui-x: "330.99993896484375"
+      gui-y: "788"
+    constraints: cpu-cores=4 mem=8192
+    bindings:
+      "": public-space
+      access: public-space
+      cluster: public-space
+      db: public-space
+      db-admin: public-space
+      ha: public-space
+      master: public-space
+      nrpe-external-master: public-space
+      shared-db: public-space
+      slave: public-space
+  vault:
+    charm: cs:~openstack-charmers-next/vault-70
+    num_units: 1
+    to:
+    - lxd:0
+    options:
+      channel: 1.2/stable
+      totally-unsecure-auto-unlock: true
+      vip: 10.246.119.252
+    annotations:
+      gui-x: "614"
+      gui-y: "618.5898384862246"
+    constraints: cpu-cores=2 mem=4096
+    bindings:
+      "": public-space
+      access: public-space
+      certificates: public-space
+      cluster: public-space
+      db: public-space
+      etcd: public-space
+      external: public-space
+      ha: public-space
+      nrpe-external-master: public-space
+      secrets: public-space
+      shared-db: public-space
+machines:
+  "0":
+    constraints: tags=superbond
+  "1":
+    constraints: tags=superbond
+  "2":
+    constraints: tags=superbond
+relations:
+- - ceph-osd:mon
+  - ceph-mon:osd
+- - ceph-osd:secrets-storage
+  - vault:secrets
+- - vault:shared-db
+  - mysql:shared-db
+- - etcd:certificates
+  - easyrsa:client
+- - etcd:db
+  - vault:etcd
+- - ceph-osd:juju-info
+  - bcache-tuning:juju-info
+- - ceph-radosgw:ha
+  - hacluster-ceph-radosgw:ha
+- - ceph-radosgw:mon
+  - ceph-mon:radosgw
+- - ceph-rbd-mirror:ceph-local
+  - ceph-mon:rbd-mirror
